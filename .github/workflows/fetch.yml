@@ -1,0 +1,33 @@
+name: Fetch Verification Date
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Runs daily at 12:00 UTC
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: pip install requests beautifulsoup4
+
+    - name: Run fetch script
+      run: python fetch_verification_date.py
+
+    - name: Commit result
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add verification_date.txt
+        git commit -m "Update verification date"
+        git push
