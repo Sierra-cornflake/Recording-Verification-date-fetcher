@@ -24,7 +24,7 @@ jobs:
     - name: Run fetch script
       run: python fetch_verification_date.py
 
-     - name: Commit result
+    - name: Commit result
       env:
         GH_PAT: ${{ secrets.GH_PAT }}
       run: |
