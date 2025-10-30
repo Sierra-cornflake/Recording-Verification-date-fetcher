@@ -11,29 +11,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
+      # Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Setup Node.js
+      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # 3️⃣ Install dependencies (puppeteer)
+      # Install dependencies (including Puppeteer)
       - name: Install dependencies
-        run: |
-          npm ci || npm install
-          # Puppeteer may need extra fonts/lib dependencies
-          sudo apt-get update
-          sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxss1 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpango1.0-0 libasound2
+        run: npm install
 
-      # 4️⃣ Run Puppeteer script to update date.json
-      - name: Run Puppeteer update script
-        run: node update.js
+      # Run Puppeteer update script
+      - name: Run Puppeteer script
+        run: npm run update
 
-      # 5️⃣ Commit and push updated date.json (optional)
+      # Commit updated date.json (if changed)
       - name: Commit updated date.json
         run: |
           git config user.name "github-actions[bot]"
