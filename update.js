@@ -4,7 +4,10 @@ import puppeteer from "puppeteer";
 const URL = "https://www.snoco.org/RecordedDocuments/search/index";
 
 async function fetchDate() {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+  headless: "new",
+  args: ["--no-sandbox", "--disable-setuid-sandbox"]
+});
   const page = await browser.newPage();
 
   try {
