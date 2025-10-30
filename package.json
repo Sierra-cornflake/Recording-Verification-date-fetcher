@@ -2,9 +2,10 @@
   "name": "recording-verification-date-fetcher",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "update": "node update.js"
+  },
   "dependencies": {
-    "node-fetch": "^3.3.2",
-    "cheerio": "^1.0.0",
     "puppeteer": "^21.3.8"
   }
 }
