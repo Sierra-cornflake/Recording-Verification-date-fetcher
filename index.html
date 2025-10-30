@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snohomish County Verification Date</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f9fafb;
+      color: #333;
+      margin: 2em;
+      text-align: center;
+    }
+    .card {
+      display: inline-block;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1.5em 2em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    h1 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5em;
+    }
+    #verified-date {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #0c4a6e;
+    }
+    small {
+      display: block;
+      margin-top: 1em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Verification Process Completion</h1>
+    <p>Verification of the index has been performed up to the following date:</p>
+    <p id="verified-date">Loading...</p>
+    <small>Data sourced from Snohomish County Recorder’s Office</small>
+  </div>
+
+  <script>
+    // 🔧 Change this to your own GitHub Pages URL once you have date.json hosted there
+    const dataUrl = "https://yourusername.github.io/verification-date/date.json";
+
+    async function loadVerificationDate() {
+      try {
+        const response = await fetch(dataUrl);
+        if (!response.ok) throw new Error("Network response was not ok");
+        const data = await response.json();
+        document.getElementById("verified-date").textContent = data.date || "Date unavailable";
+      } catch (err) {
+        document.getElementById("verified-date").textContent = "Could not load date.";
+        console.error("Error loading verification date:", err);
+      }
+    }
+
+    loadVerificationDate();
+  </script>
+</body>
+</html>
