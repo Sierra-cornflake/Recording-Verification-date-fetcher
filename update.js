@@ -1,28 +1,47 @@
+import fs from "fs";
 import puppeteer from "puppeteer";
-import { writeFileSync } from "fs";
 
-(async () => {
+const URL = "https://www.snoco.org/RecordedDocuments/search/index";
+
+async function fetchDate() {
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
-  
-  // Go to the records search page
-  await page.goto("https://www.snoco.org/RecordedDocuments/search/index", { waitUntil: "networkidle2" });
-  
-  // Wait for the element that contains the date
-  await page.waitForSelector("#cfnVerifiedThrough");
 
-  // Extract the inner text
-  const text = await page.$eval("#cfnVerifiedThrough", el => el.innerText);
+  try {
+    await page.goto(URL, { waitUntil: "networkidle2" });
 
-  // Match the date (MM/DD/YYYY)
-  const dateMatch = text.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
-  const date = dateMatch ? dateMatch[0] : null;
+    // Wait for the element to load
+    await page.waitForSelector("#cfnVerifiedThrough");
 
-  if (!date) throw new Error("❌ Could not find verification date on the page.");
+    // Extract the text content
+    const dateText = await page.$eval(
+      "#cfnVerifiedThrough .alert-info-grey",
+      el => el.textContent
+    );
 
-  // Write date to JSON
-  writeFileSync("date.json", JSON.stringify({ date }, null, 2));
-  console.log("✅ Updated date:", date);
+    // Match a date in MM/DD/YYYY format
+    const dateMatch = dateText.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
 
-  await browser.close();
-})();
+    if (!dateMatch) {
+      throw new Error("Could not find verification date on the page.");
+    }
+
+    const verifiedDate = dateMatch[0];
+
+    // Write to date.json
+    const data = {
+      date: verifiedDate,
+      source: URL
+    };
+    fs.writeFileSync("date.json", JSON.stringify(data, null, 2));
+
+    console.log("Verified-through date updated:", verifiedDate);
+  } catch (err) {
+    console.error("Error fetching date:", err);
+    process.exit(1);
+  } finally {
+    await browser.close();
+  }
+}
+
+fetchDate();
