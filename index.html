@@ -44,22 +44,19 @@
     <small>Data sourced from Snohomish County Recorder’s Office</small>
   </div>
 
-  <script>
-    const dataUrl = "https://sierra-cornflake.github.io/Recording-Verification-date-fetcher/date.json";
+<div id="verifiedDate">Loading verified-through date...</div>
 
-    async function loadVerificationDate() {
-      try {
-        const response = await fetch(dataUrl);
-        if (!response.ok) throw new Error("Network response was not ok");
-        const data = await response.json();
-        document.getElementById("verified-date").textContent = data.date || "Date unavailable";
-      } catch (err) {
-        document.getElementById("verified-date").textContent = "Could not load date.";
-        console.error("Error loading verification date:", err);
-      }
-    }
+<script>
+  fetch('date.json')
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('verifiedDate').textContent = `Verification Process Completion: ${data.date}`;
+    })
+    .catch(err => {
+      console.error('Could not load date:', err);
+      document.getElementById('verifiedDate').textContent = 'Date unavailable';
+    });
+</script>
 
-    loadVerificationDate();
-  </script>
 </body>
 </html>
