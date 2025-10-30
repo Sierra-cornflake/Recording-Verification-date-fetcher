@@ -1,28 +1,28 @@
-import fetch from "node-fetch";
-import * as cheerio from "cheerio";
+import puppeteer from "puppeteer";
 import { writeFileSync } from "fs";
 
-const sourceUrl = "https://www.snoco.org/RecordedDocuments/search/index";
+(async () => {
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  
+  // Go to the records search page
+  await page.goto("https://www.snoco.org/RecordedDocuments/search/index", { waitUntil: "networkidle2" });
+  
+  // Wait for the element that contains the date
+  await page.waitForSelector("#cfnVerifiedThrough");
 
-// Fetch the Snohomish County search page HTML
-const html = await fetch(sourceUrl).then(res => res.text());
+  // Extract the inner text
+  const text = await page.$eval("#cfnVerifiedThrough", el => el.innerText);
 
-// Load into cheerio (like a jQuery parser)
-const $ = cheerio.load(html);
+  // Match the date (MM/DD/YYYY)
+  const dateMatch = text.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
+  const date = dateMatch ? dateMatch[0] : null;
 
-// Find the date (pattern: MM/DD/YYYY) inside the "cfnVerifiedThrough" div
-const dateMatch = $("#cfnVerifiedThrough").text().match(/\d{2}\/\d{2}\/\d{4}/);
-const date = dateMatch ? dateMatch[0] : null;
+  if (!date) throw new Error("❌ Could not find verification date on the page.");
 
-if (!date) {
-  console.error("❌ Could not find verification date on the page.");
-  process.exit(1);
-}
+  // Write date to JSON
+  writeFileSync("date.json", JSON.stringify({ date }, null, 2));
+  console.log("✅ Updated date:", date);
 
-// Write the date.json file
-writeFileSync(
-  "date.json",
-  JSON.stringify({ date, source: sourceUrl, updated: new Date().toISOString() }, null, 2)
-);
-
-console.log("✅ Updated date.json to:", date);
+  await browser.close();
+})();
