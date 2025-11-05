@@ -19,6 +19,8 @@ async function fetchDate() {
 
     console.log("Looking for the verified-through section...");
 
+    await page.screenshot({ path: "debug.png", fullPage: true });
+
     // Get all text content from the body and look for a date pattern
     const bodyText = await page.evaluate(() => document.body.innerText);
     const dateMatch = bodyText.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
