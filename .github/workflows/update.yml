@@ -29,6 +29,14 @@ jobs:
       - name: Run Puppeteer script
         run: npm run update
 
+      # Upload screenshot if script fails
+      - name: Upload debug screenshot
+        if: failure() # only upload if the script failed
+        uses: actions/upload-artifact@v3
+        with:
+          name: debug-screenshot
+          path: debug.png
+
       # Commit updated date.json (if changed)
       - name: Commit updated date.json
         run: |
