@@ -13,68 +13,58 @@ async function fetchDate() {
 
   const page = await browser.newPage();
 
+  // Use a normal browser user agent
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36"
+  );
+
   try {
     console.log("Navigating to landing page...");
-    await page.goto(LANDING_URL, { waitUntil: "networkidle2", timeout: 60000 });
+    await page.goto(LANDING_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-    // Click Name Search button
+    // Wait for the Name Search link (using the correct selector)
     console.log("Clicking Name Search...");
-    await page.waitForSelector("#searchCategoryName", { timeout: 15000 });
-    await page.click("#searchCategoryName");
+    await page.waitForSelector('a[title="Name Search"]', { timeout: 20000 });
+    await page.click('a[title="Name Search"]');
 
-    // Wait for disclaimer modal, click Accept
+    // Disclaimer Accept button
     console.log("Waiting for disclaimer...");
-    await page.waitForSelector("#disclaimerAccept", { timeout: 15000 });
+    await page.waitForSelector("#disclaimerAccept", { timeout: 20000 });
     await page.click("#disclaimerAccept");
 
-    // Now wait for redirect to the search criteria page
-    console.log("Waiting for redirect to final search screen...");
-    await page.waitForNavigation({
-      waitUntil: "networkidle2",
-      timeout: 60000,
-    });
-
-    // Ensure we are on the correct page
-    const currentUrl = page.url();
-    if (!currentUrl.includes("searchCriteriaName")) {
-      console.warn("Did not land on expected URL, forcing navigation...");
-      await page.goto(FINAL_URL, {
-        waitUntil: "networkidle2",
-        timeout: 60000,
+    console.log("Waiting for redirect...");
+    try {
+      await page.waitForNavigation({
+        waitUntil: "domcontentloaded",
+        timeout: 30000,
       });
+    } catch {
+      // If redirect doesn't fire automatically
+      console.log("Forced navigation to final page...");
+      await page.goto(FINAL_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
     }
 
-    // Wait for the verification date element
-    console.log("Looking for verification date...");
-    await page.waitForSelector("#verificationDate", { timeout: 15000 });
+    console.log("Waiting for verification date...");
+    await page.waitForSelector("#verificationDate", { timeout: 30000 });
 
-    const verifiedDate = await page.$eval("#verificationDate", el =>
-      el.innerText.trim()
+    const text = await page.$eval("#verificationDate", el => el.innerText.trim());
+
+    console.log("Raw verification date text:", text);
+
+    const match = text.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
+
+    if (!match) throw new Error("Could not extract date from verification date element");
+
+    const verifiedDate = match[0];
+
+    // Write JSON file
+    fs.writeFileSync(
+      "date.json",
+      JSON.stringify(
+        { date: verifiedDate, source: FINAL_URL },
+        null,
+        2
+      )
     );
 
-    console.log("Extracted date text:", verifiedDate);
-
-    // Extract date using regex
-    const match = verifiedDate.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
-    if (!match) throw new Error("Could not extract date from text.");
-
-    const dateString = match[0];
-
-    // Write date.json
-    const data = {
-      date: dateString,
-      source: FINAL_URL,
-    };
-
-    fs.writeFileSync("date.json", JSON.stringify(data, null, 2));
-    console.log("✅ Saved verified-through date:", dateString);
-  } catch (err) {
-    console.error("❌ Error:", err);
-    await page.screenshot({ path: "debug.png", fullPage: true });
-    process.exit(1);
-  } finally {
-    await browser.close();
-  }
-}
-
-fetchDate();
+    console.log("✅ Saved verified-through date:", verifiedDate);
