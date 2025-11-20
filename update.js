@@ -13,7 +13,6 @@ async function fetchDate() {
 
   const page = await browser.newPage();
 
-  // Use a normal browser user agent
   await page.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36"
   );
@@ -22,12 +21,10 @@ async function fetchDate() {
     console.log("Navigating to landing page...");
     await page.goto(LANDING_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-    // Wait for the Name Search link (using the correct selector)
     console.log("Clicking Name Search...");
     await page.waitForSelector('a[title="Name Search"]', { timeout: 20000 });
     await page.click('a[title="Name Search"]');
 
-    // Disclaimer Accept button
     console.log("Waiting for disclaimer...");
     await page.waitForSelector("#disclaimerAccept", { timeout: 20000 });
     await page.click("#disclaimerAccept");
@@ -39,7 +36,6 @@ async function fetchDate() {
         timeout: 30000,
       });
     } catch {
-      // If redirect doesn't fire automatically
       console.log("Forced navigation to final page...");
       await page.goto(FINAL_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
     }
@@ -57,14 +53,26 @@ async function fetchDate() {
 
     const verifiedDate = match[0];
 
-    // Write JSON file
     fs.writeFileSync(
       "date.json",
       JSON.stringify(
-        { date: verifiedDate, source: FINAL_URL },
+        {
+          date: verifiedDate,
+          source: FINAL_URL,
+        },
         null,
         2
       )
     );
 
     console.log("✅ Saved verified-through date:", verifiedDate);
+  } catch (err) {
+    console.error("❌ Error:", err);
+    await page.screenshot({ path: "debug.png", fullPage: true });
+    process.exit(1);
+  } finally {
+    await browser.close();
+  }
+}
+
+fetchDate();
