@@ -31,12 +31,12 @@ async function fetchDate() {
     console.log("Clicking Accept...");
     await page.click("#idAcceptYes");
 
-    console.log("Waiting for redirect...");
+    console.log("Waiting for page redirect after Accept...");
     await page.waitForFunction(
-      () => window.location.href.includes("/search/index"),
+      () => window.location.href.includes("https://www.snoco.org/RecordedDocuments/search/index"),
       { timeout: 20000 }
     ).catch(async () => {
-      console.log("Redirect failed — manually loading final page...");
+      console.log("Redirect did not happen — manually navigating...");
       await page.goto(FINAL_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
     });
 
