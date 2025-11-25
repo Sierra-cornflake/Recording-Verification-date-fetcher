@@ -41,9 +41,9 @@ async function fetchDate() {
     });
 
     console.log("Waiting for verification date element...");
-    await page.waitForSelector("#verificationDate", { timeout: 30000 });
+    await page.waitForSelector("#cfnVerifiedThrough", { timeout: 30000 });
 
-    const rawText = await page.$eval("#verificationDate", el => el.innerText.trim());
+    const rawText = await page.$eval("#cfnVerifiedThrough", el => el.innerText.replace(/\s+/g, " ").trim());
     console.log("Raw text:", rawText);
 
     const match = rawText.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
