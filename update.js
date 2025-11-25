@@ -25,31 +25,29 @@ async function fetchDate() {
     await page.waitForSelector('a[title="Name Search"]', { timeout: 20000 });
     await page.click('a[title="Name Search"]');
 
-    console.log("Waiting for disclaimer...");
-    await page.waitForSelector("#disclaimerAccept", { timeout: 20000 });
-    await page.click("#disclaimerAccept");
+    console.log("Waiting for Accept modal...");
+    await page.waitForSelector("#idAcceptYes", { timeout: 20000 });
+
+    console.log("Clicking Accept...");
+    await page.click("#idAcceptYes");
 
     console.log("Waiting for redirect...");
-    try {
-      await page.waitForNavigation({
-        waitUntil: "domcontentloaded",
-        timeout: 30000,
-      });
-    } catch {
-      console.log("Forced navigation to final page...");
+    await page.waitForFunction(
+      () => window.location.href.includes("/search/index"),
+      { timeout: 20000 }
+    ).catch(async () => {
+      console.log("Redirect failed — manually loading final page...");
       await page.goto(FINAL_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
-    }
+    });
 
-    console.log("Waiting for verification date...");
+    console.log("Waiting for verification date element...");
     await page.waitForSelector("#verificationDate", { timeout: 30000 });
 
-    const text = await page.$eval("#verificationDate", el => el.innerText.trim());
+    const rawText = await page.$eval("#verificationDate", el => el.innerText.trim());
+    console.log("Raw text:", rawText);
 
-    console.log("Raw verification date text:", text);
-
-    const match = text.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
-
-    if (!match) throw new Error("Could not extract date from verification date element");
+    const match = rawText.match(/\d{1,2}\/\d{1,2}\/\d{4}/);
+    if (!match) throw new Error("Could not extract date");
 
     const verifiedDate = match[0];
 
@@ -66,6 +64,7 @@ async function fetchDate() {
     );
 
     console.log("✅ Saved verified-through date:", verifiedDate);
+
   } catch (err) {
     console.error("❌ Error:", err);
     await page.screenshot({ path: "debug.png", fullPage: true });
