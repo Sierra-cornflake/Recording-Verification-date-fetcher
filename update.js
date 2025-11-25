@@ -63,6 +63,11 @@ async function fetchDate() {
       )
     );
 
+    fs.writeFileSync(
+      "date.js",
+      `window.updateVerifiedDate(${JSON.stringify({ date: verifiedDate })});`
+    );
+
     console.log("✅ Saved verified-through date:", verifiedDate);
 
   } catch (err) {
