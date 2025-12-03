@@ -2,7 +2,7 @@ name: Update Verified Date
 
 on:
   schedule:
-    # Runs every day at 8 AM UTC
+    # Runs every Monday at 8 AM UTC (midnight PST)
     - cron: '0 8 * * 1'
   workflow_dispatch: # Allows manual trigger
 
@@ -11,38 +11,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repo
+      # 1. Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Setup Node.js
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # Install dependencies (including Puppeteer)
+      # 3. Install dependencies (including Puppeteer)
       - name: Install dependencies
         run: npm install
 
-      # Run Puppeteer update script
-      - name: Run Puppeteer script
+      # 4. Run Puppeteer safe update script
+      - name: Run Puppeteer safe update script
         run: npm run update
+        # Puppeteer script already handles failures gracefully
+        # Optional: could add env var to enable throttling settings
+        env:
+          NODE_ENV: production
 
-      # Upload screenshot if script fails
+      # 5. Upload debug screenshot if the script failed
       - name: Upload debug screenshot
-        if: failure() # only upload if the script failed
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: debug-screenshot
           path: debug.png
 
-      # Commit updated date.json (if changed)
+      # 6. Commit updated date.json if it changed
       - name: Commit updated date.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add date.json
+          git add date.json date.js
           git diff --cached --quiet || git commit -m "Update verified-through date [skip ci]"
           git push
         env:
