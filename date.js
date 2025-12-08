@@ -1,4 +1,1 @@
-window.updateVerifiedDate = function(data) {
-    // This is just a placeholder; your site will override this function.
-    console.log("Verified date loaded:", data);
-};
+window.updateVerifiedDate({"date":"11/20/2025"});
